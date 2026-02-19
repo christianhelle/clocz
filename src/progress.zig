@@ -24,7 +24,7 @@ pub const ProgressPrinter = struct {
         const n = self.results.files_scanned.load(.monotonic);
         var buf: [80]u8 = undefined;
 
-        const msg = std.fmt.bufPrint(&buf, "\rScanned {d} files\n", .{n}) catch "\n";
+        const msg = std.fmt.bufPrint(&buf, "\rScanned {d} files         \n", .{n}) catch "\n";
         std.fs.File.stderr().writeAll(msg) catch {};
     }
 };
