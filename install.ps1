@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 
 $repo = "christianhelle/clocz"
 $artifact = "clocz-windows-x86_64.zip"
-$installDir = Join-Path $env:LOCALAPPDATA "clocz"
+$installDir = "$env:USERPROFILE\.local\bin"
 
 Write-Host "Fetching latest release..."
 $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest"
