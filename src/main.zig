@@ -5,7 +5,7 @@ const results_mod = @import("results.zig");
 const VERSION = "0.1.0";
 
 const HELP =
-    \\Usage: zcloc [options] [path]
+    \\Usage: clocz [options] [path]
     \\
     \\Count lines of code in a directory tree.
     \\
@@ -67,7 +67,7 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--version")) {
             var buf: [32]u8 = undefined;
             var fw = std.fs.File.stdout().writer(&buf);
-            try fw.interface.print("zcloc {s}\n", .{VERSION});
+            try fw.interface.print("clocz {s}\n", .{VERSION});
             try fw.interface.flush();
             return;
         } else if (arg.len > 0 and arg[0] != '-') {
