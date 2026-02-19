@@ -57,3 +57,6 @@ If `pool.spawn` fails, the caller frees it immediately — do not double-free.
 **Skipped directories:** `walker.zig` silently skips hidden entries (name starts with `.`) and the hard-coded names `node_modules` and `vendor`.
 
 **Output buffering:** stdout output is buffered through a stack-allocated `[8192]u8` buffer passed to `std.fs.File.stdout().writer()`; always call `flush()` at the end of `Results.print()`.
+
+**Source control:** Commit progress to git in small logical chunks with clear one-liner messages. Always create a branch for new features or bug fixes. Use descriptive commit messages that explain the "why" behind changes, not just the "what". For example, "Refactor counter to single-pass design for performance" is better than "Change counter logic". When working locally, do not change the committer to Copilot and do not add a Co-Author line — the commit history should reflect your work, not Copilot's suggestions.
+
