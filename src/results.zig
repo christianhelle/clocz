@@ -5,7 +5,6 @@ pub const Results = struct {
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
     map: std.StringHashMap(counter.Counts),
-    /// Atomically incremented by each worker thread as files are processed.
     files_scanned: std.atomic.Value(u64) = std.atomic.Value(u64).init(0),
 
     pub fn init(allocator: std.mem.Allocator) Results {
@@ -19,7 +18,6 @@ pub const Results = struct {
         self.map.deinit();
     }
 
-    /// Thread-safe: merge counts into the per-language bucket.
     pub fn add(self: *Results, lang_name: []const u8, counts: counter.Counts) void {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -28,17 +26,16 @@ pub const Results = struct {
         if (!gop.found_existing) {
             gop.value_ptr.* = counts;
         } else {
-            gop.value_ptr.files   += counts.files;
-            gop.value_ptr.blank   += counts.blank;
+            gop.value_ptr.files += counts.files;
+            gop.value_ptr.blank += counts.blank;
             gop.value_ptr.comment += counts.comment;
-            gop.value_ptr.code    += counts.code;
+            gop.value_ptr.code += counts.code;
         }
     }
 
     const Row = struct { name: []const u8, counts: counter.Counts };
 
     pub fn print(self: *Results, w: *std.Io.Writer, elapsed_ns: u64) !void {
-        // Collect rows into a temporary list for sorting.
         var rows: std.ArrayList(Row) = .empty;
         defer rows.deinit(self.allocator);
 
@@ -46,13 +43,12 @@ pub const Results = struct {
         var it = self.map.iterator();
         while (it.next()) |kv| {
             try rows.append(self.allocator, .{ .name = kv.key_ptr.*, .counts = kv.value_ptr.* });
-            total.files   += kv.value_ptr.files;
-            total.blank   += kv.value_ptr.blank;
+            total.files += kv.value_ptr.files;
+            total.blank += kv.value_ptr.blank;
             total.comment += kv.value_ptr.comment;
-            total.code    += kv.value_ptr.code;
+            total.code += kv.value_ptr.code;
         }
 
-        // Sort by code lines descending.
         std.mem.sort(Row, rows.items, {}, struct {
             fn lt(_: void, a: Row, b: Row) bool {
                 return a.counts.code > b.counts.code;

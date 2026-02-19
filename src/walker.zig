@@ -73,8 +73,6 @@ fn walkDir(
     }
 }
 
-/// Walk `path` recursively, spawning file-processing jobs onto `pool`.
-/// Returns after all directory entries have been submitted (jobs may still run).
 pub fn walk(
     allocator: std.mem.Allocator,
     path: []const u8,
