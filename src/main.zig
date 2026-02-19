@@ -1,9 +1,9 @@
 const std = @import("std");
 const walker = @import("walker.zig");
 const results_mod = @import("results.zig");
+const progress_mod = @import("progress.zig");
 
 const VERSION = "0.1.0";
-
 const HELP =
     \\Usage: clocz [options] [path]
     \\
@@ -17,38 +17,6 @@ const HELP =
     \\  -v, --version Print version and exit
     \\
 ;
-
-/// Background thread: prints a "Scanning… N files" status line to stderr every
-/// 100 ms using \r so it overwrites itself in a real terminal.
-const ProgressPrinter = struct {
-    results: *results_mod.Results,
-    running: std.atomic.Value(bool) = std.atomic.Value(bool).init(true),
-
-    fn loop(self: *ProgressPrinter) void {
-        const stderr = std.fs.File.stderr();
-        while (self.running.load(.acquire)) {
-            std.Thread.sleep(100 * std.time.ns_per_ms);
-            // Re-check after sleep so we never print after stop() is called.
-            if (!self.running.load(.acquire)) break;
-            const n = self.results.files_scanned.load(.monotonic);
-            var buf: [64]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buf, "\rScanning... {d} files", .{n}) catch break;
-            stderr.writeAll(msg) catch {};
-        }
-    }
-
-    fn stop(self: *ProgressPrinter, thread: std.Thread) void {
-        self.running.store(false, .release);
-        thread.join();
-        // Replace the progress line with a permanent summary (ends with \n so
-        // the results table starts on a fresh line).
-        const n = self.results.files_scanned.load(.monotonic);
-        var buf: [80]u8 = undefined;
-        // Trailing spaces overwrite any longer previous progress text.
-        const msg = std.fmt.bufPrint(&buf, "\rScanned {d} files                    \n", .{n}) catch "\n";
-        std.fs.File.stderr().writeAll(msg) catch {};
-    }
-};
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -86,8 +54,8 @@ pub fn main() !void {
     var pool: std.Thread.Pool = undefined;
     try pool.init(.{ .allocator = allocator, .n_jobs = null });
 
-    var progress = ProgressPrinter{ .results = &results };
-    const progress_thread = try std.Thread.spawn(.{}, ProgressPrinter.loop, .{&progress});
+    var progress = progress_mod.ProgressPrinter{ .results = &results };
+    const progress_thread = try std.Thread.spawn(.{}, progress_mod.ProgressPrinter.loop, .{&progress});
 
     var timer = try std.time.Timer.start();
 
@@ -100,7 +68,6 @@ pub fn main() !void {
         std.process.exit(1);
     };
 
-    // Wait for all file-processing jobs to complete.
     pool.deinit();
 
     progress.stop(progress_thread);
@@ -117,4 +84,5 @@ test "imports compile" {
     _ = @import("counter.zig");
     _ = @import("results.zig");
     _ = @import("walker.zig");
+    _ = @import("progress.zig");
 }
