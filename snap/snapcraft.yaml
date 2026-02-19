@@ -1,0 +1,44 @@
+name: clocz
+base: core24
+version: git
+summary: A fast, multi-threaded line-of-code counter
+description: |
+  clocz counts lines of code, comments, and blanks across 60+ programming
+  languages. It uses multi-threaded directory scanning for high performance
+  and produces a tabular summary sorted by code lines.
+
+grade: stable
+confinement: strict
+
+apps:
+  clocz:
+    command: bin/clocz
+    plugs:
+      - home
+      - removable-media
+
+parts:
+  clocz:
+    plugin: nil
+    build-packages:
+      - curl
+      - xz-utils
+    build-environment:
+      - ZIG_VERSION: "0.15.2"
+    override-build: |
+      ARCH=$(dpkg --print-architecture)
+      case "$ARCH" in
+        amd64) ZIG_ARCH="x86_64" ;;
+        arm64) ZIG_ARCH="aarch64" ;;
+        *)     echo "Unsupported: $ARCH"; exit 1 ;;
+      esac
+
+      ZIG_TARBALL="zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz"
+      curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" -o "$ZIG_TARBALL"
+      tar xf "$ZIG_TARBALL"
+      export PATH="$(pwd)/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}:$PATH"
+
+      cd "$CRAFT_PART_SRC"
+      zig build -Doptimize=ReleaseFast
+      install -Dm755 zig-out/bin/clocz "$CRAFT_PART_INSTALL/bin/clocz"
+    source: .
