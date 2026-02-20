@@ -83,7 +83,7 @@ pub const Results = struct {
             "SUM:", total.files, total.blank, total.comment, total.code,
         });
         try w.print("{s}\n", .{sep});
-        try w.print("T={d:.2}s  ({d:.1} files/s)\n", .{ elapsed_s, files_per_s });
+        try w.print("Time={d:.2}s  ({d:.1} files/s)\n", .{ elapsed_s, files_per_s });
         try w.flush();
     }
 };
