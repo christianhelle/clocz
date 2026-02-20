@@ -19,7 +19,8 @@ jobs:
         run: echo "version=v0.1.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Update snapcraft.yaml version
-        run: sed -i "s/^version: .*/version: 0.1.${{ github.run_number }}/" snapcraft.yaml
+        run: |
+          sed -i "s/^version: .*/version: v${{ env.VERSION }}/" snapcraft.yaml
 
       - name: Commit, tag, and push
         run: |
