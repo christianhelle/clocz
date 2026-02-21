@@ -1,6 +1,6 @@
 name: clocz
 base: core22
-version: v
+version: 0.1.6
 summary: A fast, multi-threaded line-of-code counter
 description: |
   clocz counts lines of code, comments, and blanks across 60+ programming
