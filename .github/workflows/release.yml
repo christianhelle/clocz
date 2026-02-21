@@ -3,6 +3,9 @@ name: Release
 on:
   workflow_dispatch:
 
+env:
+  VERSION: "0.1.${{ github.run_number }}"
+
 permissions:
   contents: write
 
@@ -14,23 +17,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set version
-        id: set-version
-        run: echo "version=v0.1.${{ github.run_number }}" >> $GITHUB_OUTPUT
-
       - name: Update snapcraft.yaml version
         run: |
-          sed -i "s/^version: .*/version: v${{ env.VERSION }}/" snapcraft.yaml
+          sed -i "s/^version: .*/version: ${{ env.VERSION }}/" snapcraft.yaml
 
       - name: Commit, tag, and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add snapcraft.yaml
-          git commit -m "chore: bump version to v0.1.${{ github.run_number }}"
-          git tag v0.1.${{ github.run_number }}
+          git commit -m "chore: bump version to v${{ env.VERSION }}"
+          git tag v${{ env.VERSION }}
           git push
-          git push origin v0.1.${{ github.run_number }}
+          git push origin v${{ env.VERSION }}
 
   build:
     needs: prepare
@@ -91,7 +90,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.prepare.outputs.version }}
+          tag_name: ${{ env.VERSION }}
           generate_release_notes: true
           files: |
             *.tar.gz
