@@ -10,7 +10,7 @@ pub const ReportFormat = enum {
 pub fn reportFileName(format: ReportFormat) []const u8 {
     return switch (format) {
         .text => "clocz.txt",
-        .markdown => "clocz.md",
+        .markdown => "clocz.markdown",
         .html => "clocz.html",
     };
 }
@@ -78,7 +78,7 @@ pub const Results = struct {
 
         const elapsed_s = @as(f64, @floatFromInt(elapsed_ns)) / 1e9;
         const files_per_s = if (elapsed_s > 0)
-            @as(f64, @floatFromInt(total.files)) / elapsed_s
+            @as(f64, @floatFromInt(self.files_scanned.load(.unordered))) / elapsed_s
         else
             0;
 
@@ -278,6 +278,7 @@ fn renderResults(allocator: std.mem.Allocator, format: ReportFormat) ![]u8 {
 
     results.add("Zig", .{ .files = 2, .blank = 4, .comment = 3, .code = 40 });
     results.add("Markdown", .{ .files = 1, .blank = 2, .comment = 0, .code = 12 });
+    results.files_scanned.store(3, .unordered);
 
     var aw = std.Io.Writer.Allocating.init(allocator);
     defer aw.deinit();
@@ -288,7 +289,7 @@ fn renderResults(allocator: std.mem.Allocator, format: ReportFormat) ![]u8 {
 
 test "report file names match formats" {
     try std.testing.expectEqualStrings("clocz.txt", reportFileName(.text));
-    try std.testing.expectEqualStrings("clocz.md", reportFileName(.markdown));
+    try std.testing.expectEqualStrings("clocz.markdown", reportFileName(.markdown));
     try std.testing.expectEqualStrings("clocz.html", reportFileName(.html));
 }
 
