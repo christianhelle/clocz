@@ -3,9 +3,91 @@ base: core22
 version: 0.1.7
 summary: A fast, multi-threaded line-of-code counter
 description: |
-  clocz counts lines of code, comments, and blanks across 60+ programming
-  languages. It uses multi-threaded directory scanning for high performance
-  and produces a tabular summary sorted by code lines.
+  clocz is a fast, multi-threaded command-line tool for counting lines of code,
+  written in Zig. It scans a directory tree, groups files by language, and
+  reports file, blank, comment, and code totals in formats that work well in
+  terminals, documentation, and shared artifacts.
+
+  Features:
+  - Counts code, comment, and blank lines per language.
+  - Uses multi-threaded directory scanning through Zig's Thread.Pool for high
+    throughput on large source trees.
+  - Supports 60+ languages out of the box across systems, scripting, web,
+    data, configuration, and documentation workflows.
+  - Exports reports as text, markdown, or standalone HTML.
+  - Ships as a single static binary with zero external runtime dependencies.
+  - Runs on Linux, macOS, and Windows.
+
+  Installation:
+  - Linux and macOS: use the install script from the GitHub repository.
+  - Windows: use the PowerShell install script from the GitHub repository.
+  - Snap: install with 'sudo snap install clocz'.
+  - Source: build with 'zig build -Doptimize=ReleaseFast' using Zig 0.15.2 or
+    newer.
+
+  Usage:
+  - Run 'clocz' to count lines in the current directory.
+  - Run 'clocz /path/to/project' to scan a specific directory.
+  - Run 'clocz --report markdown /path/to/project > report.md' to export a
+    markdown report.
+  - Run 'clocz --report html /path/to/project > report.html' to export a
+    standalone HTML report.
+
+  The default text report is a terminal-friendly table sorted by code lines.
+  It shows each detected language together with file, blank, comment, and code
+  totals, followed by a final summary row and timing information.
+
+  The markdown report is designed for issues, pull requests, wikis, and other
+  documentation. It renders as a clean table with totals plus runtime and
+  throughput notes, making it easy to paste project metrics into collaboration
+  workflows.
+
+  The HTML report is a standalone document with summary metrics, responsive
+  layout, and a readable styled table that can be opened directly in a browser,
+  attached to CI artifacts, or shared with stakeholders who prefer a visual
+  report over terminal output.
+
+  For each detected language, clocz reports:
+  - Number of files.
+  - Blank lines.
+  - Comment lines.
+  - Code lines.
+
+  The final summary also includes total counts across all languages, elapsed
+  runtime, and throughput in files per second.
+
+  clocz is intended to be a lightweight alternative when you want fast results,
+  simple installation, and exportable reports without introducing a larger
+  runtime stack into your tooling. It fits local development, CI jobs, release
+  validation, repository health checks, codebase snapshots, documentation
+  updates, and team status reporting.
+
+  Because clocz is written in Zig and distributed as a compact native
+  executable, it starts quickly and is easy to integrate into shell scripts,
+  automation pipelines, and reproducible developer environments. The text
+  output is easy to read in a terminal, the markdown output is ready for
+  collaboration, and the HTML output is suitable for archiving or presentation.
+
+  Typical use cases include:
+  - Measuring language distribution in multi-language repositories.
+  - Capturing line-count snapshots before and after refactors.
+  - Publishing metrics in README files, issues, or pull requests.
+  - Generating shareable HTML reports for build artifacts or audits.
+  - Comparing repository composition across services or teams.
+  - Adding fast line-count reporting to continuous integration pipelines.
+
+  Whether you are scanning a personal project or a large monorepo, clocz
+  focuses on clear results, practical export formats, and dependable
+  performance with minimal setup.
+
+  It is well suited for teams that want a native utility with predictable
+  behavior: no service dependency, no language runtime to provision, and no
+  extra packaging overhead beyond a single executable.
+
+  It also works well for periodic repository inventory tasks, technical due
+  diligence, engineering planning, and simple trend tracking where a concise
+  language and line-count breakdown helps teams understand the shape of a
+  codebase before deeper analysis.
 
 grade: stable
 confinement: strict
