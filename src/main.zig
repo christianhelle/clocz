@@ -48,7 +48,7 @@ pub fn main() !void {
 
     var out_buf: [8192]u8 = undefined;
     var fw = std.fs.File.stdout().writer(&out_buf);
-    try results.print(&fw.interface, elapsed_ns);
+    try results.print(&fw.interface, cli.options.report_format, elapsed_ns);
 }
 
 test "imports compile" {
