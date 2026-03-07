@@ -12,8 +12,7 @@ description: |
   - Counts code, comment, and blank lines per language.
   - Uses multi-threaded directory scanning through Zig's Thread.Pool for high
     throughput on large source trees.
-  - Supports 60+ languages out of the box across systems, scripting, web,
-    data, configuration, and documentation workflows.
+  - Supports 60+ languages out of the box across systems, scripting, web, data, and config workflows.
   - Always prints a terminal-friendly text summary.
   - Writes report files as text, markdown, or standalone HTML.
   - Ships as a single static binary with zero external runtime dependencies.
@@ -30,15 +29,15 @@ description: |
   - Run 'clocz' to count lines in the current directory.
   - Run 'clocz /path/to/project' to scan a specific directory.
   - Run 'clocz --report markdown /path/to/project' to keep the normal text
-    output and also write clocz.markdown.
+    output and write clocz.markdown.
   - Run 'clocz --report html /path/to/project' to keep the normal text output
-    and also write clocz.html.
+    and write clocz.html.
   - Run 'clocz --report text /path/to/project' to keep the normal text output
-    and also write clocz.text.
+    and write clocz.text.
 
   When --report is used, clocz still prints the standard text table to stdout.
   The selected report is also written to the current working directory as
-  clocz.text, clocz.markdown, or clocz.html.
+  clocz.text, clocz.markdown, or clocz.html. Bare --report uses text.
 
   The default text output is a terminal-friendly table sorted by code lines. It
   shows each detected language together with file, blank, comment, and code

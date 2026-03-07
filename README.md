@@ -66,7 +66,7 @@ clocz --report markdown /path/to/project
 clocz --report html /path/to/project
 ```
 
-`clocz` always prints the standard text table to stdout. It also writes the selected report to the current working directory using one of these filenames:
+`clocz` always prints the standard text table to stdout. It also writes the selected report to the current working directory using one of these filenames. If `--report` is provided without a format, `text` is used:
 
 - `clocz.text`
 - `clocz.markdown`
@@ -117,7 +117,7 @@ Arguments:
 
 Options:
   -h, --help    Print this help and exit
-      --report  Write clocz.text, clocz.markdown, or clocz.html (default: text)
+      --report  Optionally set format: text, markdown, or html (default: text)
   -v, --version Print version and exit
 ```
 

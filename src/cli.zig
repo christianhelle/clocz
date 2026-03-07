@@ -12,7 +12,7 @@ const HELP =
     \\
     \\Options:
     \\  -h, --help    Print this help and exit
-    \\      --report  Write clocz.text, clocz.markdown, or clocz.html (default: text)
+    \\      --report  Optionally set format: text, markdown, or html (default: text)
     \\  -v, --version Print version and exit
     \\
 ;
@@ -77,14 +77,17 @@ pub const Cli = struct {
             } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--version")) {
                 options.version = true;
             } else if (std.mem.eql(u8, arg, "--report")) {
-                i += 1;
-                if (i >= args.len) {
-                    failParse("Missing value for --report. Expected one of: text, markdown, html", .{});
+                if (i + 1 < args.len) {
+                    const next_arg = args[i + 1];
+                    if (parseReportFormat(next_arg)) |format| {
+                        options.report_format = format;
+                        i += 1;
+                    } else {
+                        options.report_format = .text;
+                    }
+                } else {
+                    options.report_format = .text;
                 }
-
-                options.report_format = parseReportFormat(args[i]) orelse {
-                    failParse("Invalid value for --report: {s}. Expected one of: text, markdown, html", .{args[i]});
-                };
             } else if (std.mem.startsWith(u8, arg, "--report=")) {
                 const value = arg["--report=".len..];
                 options.report_format = parseReportFormat(value) orelse {
@@ -114,4 +117,39 @@ test "parse report format values" {
     try std.testing.expectEqual(results_mod.ReportFormat.markdown, parseReportFormat("markdown").?);
     try std.testing.expectEqual(results_mod.ReportFormat.html, parseReportFormat("html").?);
     try std.testing.expect(parseReportFormat("pdf") == null);
+}
+
+test "bare --report defaults to text" {
+    const allocator = std.testing.allocator;
+
+    const original_args = std.os.argv;
+    defer std.os.argv = original_args;
+
+    const argv = [_][*:0]const u8{ "clocz", "--report" };
+    std.os.argv = &argv;
+
+    const cli = try Cli.init(allocator);
+    defer cli.deinit();
+
+    try std.testing.expectEqual(results_mod.ReportFormat.text, cli.options.report_format);
+}
+
+test "--report followed by path keeps text format" {
+    const allocator = std.testing.allocator;
+
+    const original_args = std.os.argv;
+    defer std.os.argv = original_args;
+
+    const argv = [_][*:0]const u8{ "clocz", "--report", "src" };
+    std.os.argv = &argv;
+
+    const cli = try Cli.init(allocator);
+    defer cli.deinit();
+
+    try std.testing.expectEqual(results_mod.ReportFormat.text, cli.options.report_format);
+    try std.testing.expectEqualStrings("src", cli.path);
+}
+
+test "--report followed by unknown option still errors later" {
+    try std.testing.expect(parseReportFormat("--bogus") == null);
 }
