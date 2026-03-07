@@ -46,6 +46,12 @@ pub fn main() !void {
 
     const elapsed_ns = timer.read();
 
+    results.writeReportFile(std.fs.cwd(), cli.options.report_format, elapsed_ns) catch |err| {
+        var buf: [256]u8 = undefined;
+        const msg = try std.fmt.bufPrint(&buf, "warning: failed to write report file: {s}\n", .{@errorName(err)});
+        std.fs.File.stderr().writeAll(msg) catch {};
+    };
+
     var out_buf: [8192]u8 = undefined;
     var fw = std.fs.File.stdout().writer(&out_buf);
     try results.print(&fw.interface, elapsed_ns);
