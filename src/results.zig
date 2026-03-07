@@ -10,7 +10,7 @@ pub const ReportFormat = enum {
 pub fn reportFileName(format: ReportFormat) []const u8 {
     return switch (format) {
         .text => "clocz.txt",
-        .markdown => "clocz.markdown",
+        .markdown => "clocz.md",
         .html => "clocz.html",
     };
 }
@@ -289,7 +289,7 @@ fn renderResults(allocator: std.mem.Allocator, format: ReportFormat) ![]u8 {
 
 test "report file names match formats" {
     try std.testing.expectEqualStrings("clocz.txt", reportFileName(.text));
-    try std.testing.expectEqualStrings("clocz.markdown", reportFileName(.markdown));
+    try std.testing.expectEqualStrings("clocz.md", reportFileName(.markdown));
     try std.testing.expectEqualStrings("clocz.html", reportFileName(.html));
 }
 

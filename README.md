@@ -59,7 +59,7 @@ clocz
 # Count lines in a specific directory and write clocz.text
 clocz /path/to/project
 
-# Print the normal text summary and write clocz.markdown
+# Print the normal text summary and write clocz.md
 clocz --report markdown /path/to/project
 
 # Print the normal text summary and write clocz.html
@@ -69,7 +69,7 @@ clocz --report html /path/to/project
 `clocz` always prints the standard text table to stdout. It also writes the selected report to the current working directory using one of these filenames. If `--report` is provided without a format, `text` is used:
 
 - `clocz.text`
-- `clocz.markdown`
+- `clocz.md`
 - `clocz.html`
 
 ### Example text output
@@ -124,7 +124,7 @@ Options:
 ### Report formats
 
 - `text` writes `clocz.text` while stdout remains the normal text summary
-- `markdown` writes `clocz.markdown` for issues, pull requests, and documentation
+- `markdown` writes `clocz.md` for issues, pull requests, and documentation
 - `html` writes `clocz.html` as a standalone report with totals, styling, and a responsive layout
 
 ## What clocz reports
