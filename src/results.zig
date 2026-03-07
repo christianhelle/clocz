@@ -7,6 +7,14 @@ pub const ReportFormat = enum {
     html,
 };
 
+pub fn reportFileName(format: ReportFormat) []const u8 {
+    return switch (format) {
+        .text => "clocz.text",
+        .markdown => "clocz.markdown",
+        .html => "clocz.html",
+    };
+}
+
 pub const Results = struct {
     allocator: std.mem.Allocator,
     mutex: std.Thread.Mutex = .{},
@@ -237,7 +245,7 @@ pub const Results = struct {
         );
     }
 
-    pub fn print(self: *Results, w: *std.Io.Writer, format: ReportFormat, elapsed_ns: u64) !void {
+    fn render(self: *Results, w: *std.Io.Writer, format: ReportFormat, elapsed_ns: u64) !void {
         const summary = try self.buildSummary(self.allocator, elapsed_ns);
         defer self.freeSummary(summary);
 
@@ -247,6 +255,20 @@ pub const Results = struct {
             .html => try self.writeHtmlReport(w, summary),
         }
         try w.flush();
+    }
+
+    pub fn print(self: *Results, w: *std.Io.Writer, elapsed_ns: u64) !void {
+        try self.render(w, .text, elapsed_ns);
+    }
+
+    pub fn writeReportFile(self: *Results, dir: std.fs.Dir, format: ReportFormat, elapsed_ns: u64) !void {
+        const file_name = reportFileName(format);
+        var file = try dir.createFile(file_name, .{ .truncate = true });
+        defer file.close();
+
+        var out_buf: [8192]u8 = undefined;
+        var fw = file.writer(&out_buf);
+        try self.render(&fw.interface, format, elapsed_ns);
     }
 };
 
@@ -260,8 +282,14 @@ fn renderResults(allocator: std.mem.Allocator, format: ReportFormat) ![]u8 {
     var aw = std.Io.Writer.Allocating.init(allocator);
     defer aw.deinit();
 
-    try results.print(&aw.writer, format, std.time.ns_per_s * 2);
+    try results.render(&aw.writer, format, std.time.ns_per_s * 2);
     return try aw.toOwnedSlice();
+}
+
+test "report file names match formats" {
+    try std.testing.expectEqualStrings("clocz.text", reportFileName(.text));
+    try std.testing.expectEqualStrings("clocz.markdown", reportFileName(.markdown));
+    try std.testing.expectEqualStrings("clocz.html", reportFileName(.html));
 }
 
 test "text report output includes totals and timing" {
@@ -293,4 +321,22 @@ test "html report output contains document structure" {
     try std.testing.expect(std.mem.indexOf(u8, output, "<title>clocz report</title>") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "<th scope=\"row\">SUM</th>") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "Throughput: 1.5 files/s") != null);
+}
+
+test "report file is written to disk in selected format" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+
+    var results = Results.init(allocator);
+    defer results.deinit();
+
+    results.add("Zig", .{ .files = 2, .blank = 4, .comment = 3, .code = 40 });
+    try results.writeReportFile(tmp.dir, .markdown, std.time.ns_per_s * 2);
+
+    const output = try tmp.dir.readFileAlloc(allocator, reportFileName(.markdown), 64 * 1024);
+    defer allocator.free(output);
+
+    try std.testing.expect(std.mem.startsWith(u8, output, "# clocz report\n\n"));
+    try std.testing.expect(std.mem.indexOf(u8, output, "| Zig | 2 | 4 | 3 | 40 |") != null);
 }
