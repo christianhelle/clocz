@@ -27,17 +27,21 @@ description: |
 
   Usage:
   - Run 'clocz' to count lines in the current directory.
-  - Run 'clocz /path/to/project' to scan a specific directory.
-  - Run 'clocz --report markdown /path/to/project' to keep the normal text
+  - Run 'clocz ~/<project-name>' to scan a specific project in your home directory.
+  - Run 'clocz --report markdown ~/<project-name>' to keep the normal text
     output and write clocz.markdown.
-  - Run 'clocz --report html /path/to/project' to keep the normal text output
+  - Run 'clocz --report html ~/<project-name>' to keep the normal text output
     and write clocz.html.
-  - Run 'clocz --report text /path/to/project' to keep the normal text output
-    and write clocz.text.
+  - Run 'clocz --report text ~/<project-name>' to keep the normal text output
+    and write clocz.txt.
 
   When --report is used, clocz still prints the standard text table to stdout.
   The selected report is also written to the current working directory as
-  clocz.text, clocz.markdown, or clocz.html. Bare --report uses text.
+  clocz.txt, clocz.markdown, or clocz.html. Note that clocz runs under strict
+  confinement and can only write to the current directory if it is within an
+  accessible location: non-hidden directories in your home directory or mounted
+  removable media. The snap has access to the home and removable-media plugs.
+  Bare --report uses text.
 
   The default text output is a terminal-friendly table sorted by code lines. It
   shows each detected language together with file, blank, comment, and code
