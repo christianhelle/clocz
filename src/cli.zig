@@ -12,7 +12,7 @@ const HELP =
     \\
     \\Options:
     \\  -h, --help    Print this help and exit
-    \\      --report  Export report as text, markdown, or html (default: text)
+    \\      --report  Write clocz.text, clocz.markdown, or clocz.html (default: text)
     \\  -v, --version Print version and exit
     \\
 ;

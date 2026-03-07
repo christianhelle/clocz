@@ -1,6 +1,6 @@
 # clocz
 
-`clocz` is a fast, multi-threaded command-line tool for counting lines of code, written in [Zig](https://ziglang.org/). It scans a directory tree, groups files by language, and reports file, blank, comment, and code totals in formats that work well in terminals, documentation, and shared artifacts.
+`clocz` is a fast, multi-threaded command-line tool for counting lines of code, written in [Zig](https://ziglang.org/). It scans a directory tree, groups files by language, prints a text summary to standard output, and writes a report file you can keep, share, or publish.
 
 [![CI](https://github.com/christianhelle/clocz/actions/workflows/ci.yml/badge.svg)](https://github.com/christianhelle/clocz/actions/workflows/ci.yml)
 [![Release](https://github.com/christianhelle/clocz/actions/workflows/release.yml/badge.svg)](https://github.com/christianhelle/clocz/actions/workflows/release.yml)
@@ -10,7 +10,8 @@
 - Counts code, comment, and blank lines per language
 - Multi-threaded directory scanning via Zig's `Thread.Pool`
 - Supports 60+ languages out of the box
-- Exports reports as text, markdown, or standalone HTML
+- Always prints a terminal-friendly text summary
+- Writes report files as text, markdown, or standalone HTML
 - Zero external dependencies
 - Single static binary - no runtime needed
 - Cross-platform: Linux, macOS, Windows
@@ -52,20 +53,26 @@ The binary is at `zig-out/bin/clocz`.
 ## Usage
 
 ```sh
-# Count lines in the current directory
+# Count lines in the current directory and write clocz.text
 clocz
 
-# Count lines in a specific directory
+# Count lines in a specific directory and write clocz.text
 clocz /path/to/project
 
-# Export a markdown report
-clocz --report markdown /path/to/project > report.md
+# Print the normal text summary and write clocz.markdown
+clocz --report markdown /path/to/project
 
-# Export a standalone HTML report
-clocz --report html /path/to/project > report.html
+# Print the normal text summary and write clocz.html
+clocz --report html /path/to/project
 ```
 
-### Example text report
+`clocz` always prints the standard text table to stdout. It also writes the selected report to the current working directory using one of these filenames:
+
+- `clocz.text`
+- `clocz.markdown`
+- `clocz.html`
+
+### Example text output
 
 ```text
 ------------------------------------------------------------------------
@@ -79,7 +86,7 @@ SUM:                                  7       53         22        370
 Time=0.01s  (700.0 files/s)
 ```
 
-### Example markdown report
+### Example markdown report file
 
 ```md
 # clocz report
@@ -94,9 +101,9 @@ Time=0.01s  (700.0 files/s)
 - Throughput: 700.0 files/s
 ```
 
-### Example HTML report
+### Example HTML report file
 
-`clocz --report html` generates a standalone HTML document with summary metrics and a responsive table, so it can be opened directly in a browser or attached to CI artifacts.
+`clocz --report html` writes a standalone HTML document with summary metrics and a responsive table to `clocz.html`, ready to open in a browser or attach to CI artifacts.
 
 ### Options
 
@@ -110,15 +117,15 @@ Arguments:
 
 Options:
   -h, --help    Print this help and exit
-      --report  Export report as text, markdown, or html (default: text)
+      --report  Write clocz.text, clocz.markdown, or clocz.html (default: text)
   -v, --version Print version and exit
 ```
 
 ### Report formats
 
-- `text` is the default terminal-friendly table output
-- `markdown` produces a table that can be pasted into issues, pull requests, and documentation
-- `html` produces a standalone report with totals, styling, and a responsive layout for sharing in a browser
+- `text` writes `clocz.text` while stdout remains the normal text summary
+- `markdown` writes `clocz.markdown` for issues, pull requests, and documentation
+- `html` writes `clocz.html` as a standalone report with totals, styling, and a responsive layout
 
 ## What clocz reports
 
