@@ -53,10 +53,10 @@ The binary is at `zig-out/bin/clocz`.
 ## Usage
 
 ```sh
-# Count lines in the current directory and write clocz.text
+# Count lines in the current directory and write clocz.txt
 clocz
 
-# Count lines in a specific directory and write clocz.text
+# Count lines in a specific directory and write clocz.txt
 clocz /path/to/project
 
 # Print the normal text summary and write clocz.md
@@ -68,7 +68,7 @@ clocz --report html /path/to/project
 
 `clocz` always prints the standard text table to stdout. It also writes the selected report to the current working directory using one of these filenames. If `--report` is provided without a format, `text` is used:
 
-- `clocz.text`
+- `clocz.txt`
 - `clocz.md`
 - `clocz.html`
 
@@ -123,7 +123,7 @@ Options:
 
 ### Report formats
 
-- `text` writes `clocz.text` while stdout remains the normal text summary
+- `text` writes `clocz.txt` while stdout remains the normal text summary
 - `markdown` writes `clocz.md` for issues, pull requests, and documentation
 - `html` writes `clocz.html` as a standalone report with totals, styling, and a responsive layout
 
