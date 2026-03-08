@@ -1,6 +1,6 @@
 name: clocz
 base: core22
-version: 0.1.7
+version: 0.1.8
 summary: A fast, multi-threaded line-of-code counter
 description: |
   clocz is a fast, multi-threaded command-line tool for counting lines of code,
