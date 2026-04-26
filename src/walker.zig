@@ -74,8 +74,10 @@ fn walkDir(
                     allocator.free(entry_path);
                     continue;
                 };
-                errdefer thread.join();
-                try threads.append(allocator, thread);
+                threads.append(allocator, thread) catch |err| {
+                    thread.join();
+                    return err;
+                };
             },
             else => allocator.free(entry_path),
         }
@@ -92,7 +94,7 @@ pub fn walk(
     defer threads.deinit(allocator);
     defer for (threads.items) |thread| thread.join();
 
-    var limiter: std.Io.Semaphore = .{ .permits = @max(std.Thread.getCpuCount() catch 1, 1) };
+    var limiter: std.Io.Semaphore = .{ .permits = std.Thread.getCpuCount() catch 1 };
     var dir = try std.Io.Dir.cwd().openDir(io, path, .{ .iterate = true });
     defer dir.close(io);
     try walkDir(allocator, io, dir, path, results, &limiter, &threads);
