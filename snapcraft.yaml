@@ -22,7 +22,7 @@ description: |
   - Linux and macOS: use the install script from the GitHub repository.
   - Windows: use the PowerShell install script from the GitHub repository.
   - Snap: install with 'sudo snap install clocz'.
-  - Source: build with 'zig build -Doptimize=ReleaseFast' using Zig 0.15.2 or
+  - Source: build with 'zig build -Doptimize=ReleaseFast' using Zig 0.16.0 or
     newer.
 
   Usage:
