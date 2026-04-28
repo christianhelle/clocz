@@ -17,13 +17,15 @@ pub fn reportFileName(format: ReportFormat) []const u8 {
 
 pub const Results = struct {
     allocator: std.mem.Allocator,
-    mutex: std.Thread.Mutex = .{},
+    io: std.Io,
+    mutex: std.Io.Mutex = .init,
     map: std.StringHashMap(counter.Counts),
     files_scanned: std.atomic.Value(u64) = std.atomic.Value(u64).init(0),
 
-    pub fn init(allocator: std.mem.Allocator) Results {
+    pub fn init(allocator: std.mem.Allocator, io: std.Io) Results {
         return .{
             .allocator = allocator,
+            .io = io,
             .map = std.StringHashMap(counter.Counts).init(allocator),
         };
     }
@@ -33,8 +35,8 @@ pub const Results = struct {
     }
 
     pub fn add(self: *Results, lang_name: []const u8, counts: counter.Counts) void {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.mutex.lockUncancelable(self.io);
+        defer self.mutex.unlock(self.io);
 
         const gop = self.map.getOrPut(lang_name) catch return;
         if (!gop.found_existing) {
@@ -261,19 +263,19 @@ pub const Results = struct {
         try self.render(w, .text, elapsed_ns);
     }
 
-    pub fn writeReportFile(self: *Results, dir: std.fs.Dir, format: ReportFormat, elapsed_ns: u64) !void {
+    pub fn writeReportFile(self: *Results, dir: std.Io.Dir, io: std.Io, format: ReportFormat, elapsed_ns: u64) !void {
         const file_name = reportFileName(format);
-        var file = try dir.createFile(file_name, .{ .truncate = true });
-        defer file.close();
+        var file = try dir.createFile(io, file_name, .{ .truncate = true });
+        defer file.close(io);
 
         var out_buf: [8192]u8 = undefined;
-        var fw = file.writer(&out_buf);
+        var fw = file.writer(io, &out_buf);
         try self.render(&fw.interface, format, elapsed_ns);
     }
 };
 
 fn renderResults(allocator: std.mem.Allocator, format: ReportFormat) ![]u8 {
-    var results = Results.init(allocator);
+    var results = Results.init(allocator, std.testing.io);
     defer results.deinit();
 
     results.add("Zig", .{ .files = 2, .blank = 4, .comment = 3, .code = 40 });
@@ -326,16 +328,17 @@ test "html report output contains document structure" {
 
 test "report file is written to disk in selected format" {
     const allocator = std.testing.allocator;
+    const io = std.testing.io;
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    var results = Results.init(allocator);
+    var results = Results.init(allocator, io);
     defer results.deinit();
 
     results.add("Zig", .{ .files = 2, .blank = 4, .comment = 3, .code = 40 });
-    try results.writeReportFile(tmp.dir, .markdown, std.time.ns_per_s * 2);
+    try results.writeReportFile(tmp.dir, io, .markdown, std.time.ns_per_s * 2);
 
-    const output = try tmp.dir.readFileAlloc(allocator, reportFileName(.markdown), 64 * 1024);
+    const output = try tmp.dir.readFileAlloc(io, reportFileName(.markdown), allocator, .limited(64 * 1024));
     defer allocator.free(output);
 
     try std.testing.expect(std.mem.startsWith(u8, output, "# clocz report\n\n"));

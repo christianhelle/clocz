@@ -2,18 +2,19 @@ const std = @import("std");
 const results_mod = @import("results.zig");
 
 pub const ProgressPrinter = struct {
+    io: std.Io,
     results: *results_mod.Results,
     running: std.atomic.Value(bool) = std.atomic.Value(bool).init(true),
 
     pub fn loop(self: *ProgressPrinter) void {
-        const stderr = std.fs.File.stderr();
+        const stderr = std.Io.File.stderr();
         while (self.running.load(.acquire)) {
-            std.Thread.sleep(100 * std.time.ns_per_ms);
+            _ = self.io.sleep(.fromNanoseconds(100 * std.time.ns_per_ms), .awake) catch {};
             if (!self.running.load(.acquire)) break;
             const n = self.results.files_scanned.load(.monotonic);
             var buf: [64]u8 = undefined;
             const msg = std.fmt.bufPrint(&buf, "\rScanning... {d} files", .{n}) catch break;
-            stderr.writeAll(msg) catch {};
+            stderr.writeStreamingAll(self.io, msg) catch {};
         }
     }
 
@@ -25,6 +26,6 @@ pub const ProgressPrinter = struct {
         var buf: [80]u8 = undefined;
 
         const msg = std.fmt.bufPrint(&buf, "\rScanned {d} files         \n", .{n}) catch "\n";
-        std.fs.File.stderr().writeAll(msg) catch {};
+        std.Io.File.stderr().writeStreamingAll(self.io, msg) catch {};
     }
 };

@@ -17,17 +17,6 @@ const HELP =
     \\
 ;
 
-pub fn show_help() !void {
-    try std.fs.File.stdout().writeAll(HELP);
-}
-
-pub fn show_version() !void {
-    var buf: [32]u8 = undefined;
-    var fw = std.fs.File.stdout().writer(&buf);
-    try fw.interface.print("clocz {s}\n", .{VERSION});
-    try fw.interface.flush();
-}
-
 pub const CliOptions = struct {
     help: bool,
     report_format: results_mod.ReportFormat,
@@ -41,9 +30,20 @@ pub fn parseReportFormat(arg: []const u8) ?results_mod.ReportFormat {
     return null;
 }
 
-fn failParse(comptime fmt: []const u8, args: anytype) noreturn {
+pub fn show_help(io: std.Io) !void {
+    try std.Io.File.stdout().writeStreamingAll(io, HELP);
+}
+
+pub fn show_version(io: std.Io) !void {
+    var buf: [32]u8 = undefined;
+    var fw = std.Io.File.stdout().writer(io, &buf);
+    try fw.interface.print("clocz {s}\n", .{VERSION});
+    try fw.interface.flush();
+}
+
+fn failParse(io: std.Io, comptime fmt: []const u8, args: anytype) noreturn {
     var buf: [512]u8 = undefined;
-    var fw = std.fs.File.stderr().writer(&buf);
+    var fw = std.Io.File.stderr().writer(io, &buf);
     fw.interface.print(fmt, args) catch {};
     fw.interface.writeAll("\n\n") catch {};
     fw.interface.writeAll(HELP) catch {};
@@ -56,10 +56,7 @@ pub const Cli = struct {
     path: []const u8,
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator) !Cli {
-        const args = try std.process.argsAlloc(allocator);
-        defer std.process.argsFree(allocator, args);
-
+    pub fn init(allocator: std.mem.Allocator, args: []const [:0]const u8, io: std.Io) !Cli {
         var options = CliOptions{
             .help = false,
             .report_format = .text,
@@ -91,12 +88,12 @@ pub const Cli = struct {
             } else if (std.mem.startsWith(u8, arg, "--report=")) {
                 const value = arg["--report=".len..];
                 options.report_format = parseReportFormat(value) orelse {
-                    failParse("Invalid value for --report: {s}. Expected one of: text, markdown, html", .{value});
+                    failParse(io, "Invalid value for --report: {s}. Expected one of: text, markdown, html", .{value});
                 };
             } else if (arg.len > 0 and arg[0] != '-') {
                 path = arg;
             } else {
-                failParse("Unknown option: {s}", .{arg});
+                failParse(io, "Unknown option: {s}", .{arg});
             }
         }
 
@@ -121,14 +118,9 @@ test "parse report format values" {
 
 test "bare --report defaults to text" {
     const allocator = std.testing.allocator;
+    const argv = [_][:0]const u8{ "clocz", "--report" };
 
-    const original_args = std.os.argv;
-    defer std.os.argv = original_args;
-
-    const argv = [_][*:0]const u8{ "clocz", "--report" };
-    std.os.argv = &argv;
-
-    const cli = try Cli.init(allocator);
+    const cli = try Cli.init(allocator, &argv, std.testing.io);
     defer cli.deinit();
 
     try std.testing.expectEqual(results_mod.ReportFormat.text, cli.options.report_format);
@@ -136,14 +128,9 @@ test "bare --report defaults to text" {
 
 test "--report followed by path keeps text format" {
     const allocator = std.testing.allocator;
+    const argv = [_][:0]const u8{ "clocz", "--report", "src" };
 
-    const original_args = std.os.argv;
-    defer std.os.argv = original_args;
-
-    const argv = [_][*:0]const u8{ "clocz", "--report", "src" };
-    std.os.argv = &argv;
-
-    const cli = try Cli.init(allocator);
+    const cli = try Cli.init(allocator, &argv, std.testing.io);
     defer cli.deinit();
 
     try std.testing.expectEqual(results_mod.ReportFormat.text, cli.options.report_format);

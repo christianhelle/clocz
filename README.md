@@ -42,7 +42,7 @@ Pre-built binaries for Linux (x86_64, aarch64), macOS (x86_64, aarch64), and Win
 
 ### Build from source
 
-Requires [Zig 0.15.2+](https://ziglang.org/download/):
+Requires [Zig 0.16.0+](https://ziglang.org/download/):
 
 ```sh
 zig build -Doptimize=ReleaseFast
