@@ -47,6 +47,9 @@ jobs:
           - target: x86_64-windows
             os: windows-latest
             artifact: clocz-windows-x86_64
+          - target: aarch64-windows
+            os: windows-latest
+            artifact: clocz-windows-aarch64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
