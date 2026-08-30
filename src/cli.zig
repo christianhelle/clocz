@@ -20,6 +20,7 @@ const HELP =
 pub const CliOptions = struct {
     help: bool,
     report_format: results_mod.ReportFormat,
+    report_requested: bool,
     version: bool,
 };
 
@@ -60,6 +61,7 @@ pub const Cli = struct {
         var options = CliOptions{
             .help = false,
             .report_format = .text,
+            .report_requested = false,
             .version = false,
         };
 
@@ -74,6 +76,7 @@ pub const Cli = struct {
             } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--version")) {
                 options.version = true;
             } else if (std.mem.eql(u8, arg, "--report")) {
+                options.report_requested = true;
                 if (i + 1 < args.len) {
                     const next_arg = args[i + 1];
                     if (parseReportFormat(next_arg)) |format| {
@@ -86,6 +89,7 @@ pub const Cli = struct {
                     options.report_format = .text;
                 }
             } else if (std.mem.startsWith(u8, arg, "--report=")) {
+                options.report_requested = true;
                 const value = arg["--report=".len..];
                 options.report_format = parseReportFormat(value) orelse {
                     failParse(io, "Invalid value for --report: {s}. Expected one of: text, markdown, html", .{value});
@@ -109,6 +113,16 @@ pub const Cli = struct {
     }
 };
 
+test "report file is not requested by default" {
+    const allocator = std.testing.allocator;
+    const argv = [_][:0]const u8{"clocz"};
+
+    const cli = try Cli.init(allocator, &argv, std.testing.io);
+    defer cli.deinit();
+
+    try std.testing.expect(!cli.options.report_requested);
+}
+
 test "parse report format values" {
     try std.testing.expectEqual(results_mod.ReportFormat.text, parseReportFormat("text").?);
     try std.testing.expectEqual(results_mod.ReportFormat.markdown, parseReportFormat("markdown").?);
@@ -124,6 +138,7 @@ test "bare --report defaults to text" {
     defer cli.deinit();
 
     try std.testing.expectEqual(results_mod.ReportFormat.text, cli.options.report_format);
+    try std.testing.expect(cli.options.report_requested);
 }
 
 test "--report followed by path keeps text format" {
