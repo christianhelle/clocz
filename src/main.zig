@@ -40,11 +40,13 @@ pub fn main(init: std.process.Init) !void {
 
     const elapsed_ns: u64 = @intCast(started.durationTo(std.Io.Clock.Timestamp.now(io, .awake)).raw.toNanoseconds());
 
-    results.writeReportFile(std.Io.Dir.cwd(), io, cli.options.report_format, elapsed_ns) catch |err| {
-        var buf: [256]u8 = undefined;
-        const msg = try std.fmt.bufPrint(&buf, "warning: failed to write report file: {s}\n", .{@errorName(err)});
-        std.Io.File.stderr().writeStreamingAll(io, msg) catch {};
-    };
+    if (cli.options.report_requested) {
+        results.writeReportFile(std.Io.Dir.cwd(), io, cli.options.report_format, elapsed_ns) catch |err| {
+            var buf: [256]u8 = undefined;
+            const msg = try std.fmt.bufPrint(&buf, "warning: failed to write report file: {s}\n", .{@errorName(err)});
+            std.Io.File.stderr().writeStreamingAll(io, msg) catch {};
+        };
+    }
 
     var out_buf: [8192]u8 = undefined;
     var fw = std.Io.File.stdout().writer(io, &out_buf);
