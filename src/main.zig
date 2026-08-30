@@ -54,6 +54,7 @@ pub fn main(init: std.process.Init) !void {
 }
 
 test "imports compile" {
+    _ = @import("cli.zig");
     _ = @import("languages.zig");
     _ = @import("counter.zig");
     _ = @import("results.zig");
