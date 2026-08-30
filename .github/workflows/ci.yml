@@ -23,5 +23,9 @@ jobs:
       - name: Build
         run: zig build
 
+      - name: Build (Windows ARM64)
+        if: runner.os == 'Windows'
+        run: zig build -Dtarget=aarch64-windows
+
       - name: Test
         run: zig build test
