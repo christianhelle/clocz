@@ -12,6 +12,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    addAppIcon(b, exe);
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
@@ -52,9 +53,15 @@ fn addInstallStep(
             .optimize = optimize,
         }),
     });
+    addAppIcon(b, exe);
     const install_step = b.step(step_name, description);
     const install = InstallReleaseStep.create(b, @tagName(optimize), exe.getEmittedBin(), getInstallPrefix(b), exe.out_filename);
     install_step.dependOn(&install.step);
+}
+
+fn addAppIcon(b: *std.Build, exe: *std.Build.Step.Compile) void {
+    if (exe.rootModuleTarget().os.tag != .windows) return;
+    exe.root_module.addWin32ResourceFile(.{ .file = b.path("assets/clocz.rc") });
 }
 
 fn getInstallPrefix(b: *std.Build) []const u8 {
