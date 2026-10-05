@@ -39,10 +39,10 @@ pub fn build(b: *std.Build) void {
             .target = b.graph.host,
         }),
     });
-    addInstallStep(b, target, installer, "install-release", "Build ReleaseSmall and install to $HOME/.local/bin", .ReleaseSmall);
-    addInstallStep(b, target, installer, "install-release-safe", "Build ReleaseSafe and install to $HOME/.local/bin", .ReleaseSafe);
-    addInstallStep(b, target, installer, "install-release-fast", "Build ReleaseFast and install to $HOME/.local/bin", .ReleaseFast);
-    addInstallStep(b, target, installer, "install-debug", "Build Debug and install to $HOME/.local/bin", .Debug);
+    addInstallStep(b, target, installer, "install-release", "Build ReleaseSmall and install to $HOME/.local/bin", .small);
+    addInstallStep(b, target, installer, "install-release-safe", "Build ReleaseSafe and install to $HOME/.local/bin", .safe);
+    addInstallStep(b, target, installer, "install-release-fast", "Build ReleaseFast and install to $HOME/.local/bin", .fast);
+    addInstallStep(b, target, installer, "install-debug", "Build Debug and install to $HOME/.local/bin", .debug);
 }
 
 fn addInstallStep(
@@ -51,7 +51,7 @@ fn addInstallStep(
     installer: *std.Build.Step.Compile,
     step_name: []const u8,
     description: []const u8,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
 ) void {
     const exe = b.addExecutable(.{
         .name = "clocz",
