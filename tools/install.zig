@@ -38,3 +38,44 @@ fn fatal(comptime format: []const u8, args: anytype) noreturn {
     std.log.err(format, args);
     std.process.exit(1);
 }
+
+fn expectInstallDir(expected: ?[]const u8, vars: []const [2][]const u8) !void {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var env = std.process.Environ.Map.init(arena);
+    for (vars) |kv| try env.put(kv[0], kv[1]);
+    const actual = installDir(arena, &env);
+    if (expected) |e| {
+        try std.testing.expectEqualStrings(e, actual orelse return error.TestExpectedEqual);
+    } else {
+        try std.testing.expectEqual(@as(?[]const u8, null), actual);
+    }
+}
+
+test "INSTALL_DIR takes precedence over HOME and USERPROFILE" {
+    try expectInstallDir("/opt/bin", &.{ .{ "INSTALL_DIR", "/opt/bin" }, .{ "HOME", "/home/u" }, .{ "USERPROFILE", "/users/u" } });
+}
+
+test "empty INSTALL_DIR falls back to HOME" {
+    const expected = try std.fs.path.join(std.testing.allocator, &.{ "/home/u", ".local", "bin" });
+    defer std.testing.allocator.free(expected);
+    try expectInstallDir(expected, &.{ .{ "INSTALL_DIR", "" }, .{ "HOME", "/home/u" } });
+}
+
+test "HOME takes precedence over USERPROFILE" {
+    const expected = try std.fs.path.join(std.testing.allocator, &.{ "/home/u", ".local", "bin" });
+    defer std.testing.allocator.free(expected);
+    try expectInstallDir(expected, &.{ .{ "HOME", "/home/u" }, .{ "USERPROFILE", "/users/u" } });
+}
+
+test "empty HOME falls back to USERPROFILE" {
+    const expected = try std.fs.path.join(std.testing.allocator, &.{ "/users/u", ".local", "bin" });
+    defer std.testing.allocator.free(expected);
+    try expectInstallDir(expected, &.{ .{ "HOME", "" }, .{ "USERPROFILE", "/users/u" } });
+}
+
+test "no usable variables yields null" {
+    try expectInstallDir(null, &.{ .{ "INSTALL_DIR", "" }, .{ "HOME", "" } });
+    try expectInstallDir(null, &.{});
+}
