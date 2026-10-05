@@ -1,6 +1,6 @@
 # clocz – Copilot Instructions
 
-`clocz` is a fast, multi-threaded "count lines of code" CLI tool written in Zig (minimum version 0.16.0). It has no external dependencies.
+`clocz` is a fast, multi-threaded "count lines of code" CLI tool written in Zig (minimum version 0.17.0). It has no external dependencies.
 
 ## Build, run, and test
 
