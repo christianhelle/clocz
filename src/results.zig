@@ -97,13 +97,13 @@ pub const Results = struct {
     }
 
     fn writeTextReport(_: *Results, w: *std.Io.Writer, summary: Summary) !void {
-        const sep = "-" ** 72;
+        const sep: [72]u8 = @splat('-');
 
-        try w.print("{s}\n", .{sep});
+        try w.print("{s}\n", .{&sep});
         try w.print("{s:<30} {s:>8} {s:>8} {s:>10} {s:>10}\n", .{
             "Language", "files", "blank", "comment", "code",
         });
-        try w.print("{s}\n", .{sep});
+        try w.print("{s}\n", .{&sep});
 
         for (summary.rows) |row| {
             try w.print("{s:<30} {d:>8} {d:>8} {d:>10} {d:>10}\n", .{
@@ -115,11 +115,11 @@ pub const Results = struct {
             });
         }
 
-        try w.print("{s}\n", .{sep});
+        try w.print("{s}\n", .{&sep});
         try w.print("{s:<30} {d:>8} {d:>8} {d:>10} {d:>10}\n", .{
             "SUM:", summary.total.files, summary.total.blank, summary.total.comment, summary.total.code,
         });
-        try w.print("{s}\n", .{sep});
+        try w.print("{s}\n", .{&sep});
         try w.print("Time={d:.2}s  ({d:.1} files/s)\n", .{ summary.elapsed_s, summary.files_per_s });
     }
 
